@@ -23,7 +23,6 @@
         header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.5px; }
         header p { margin: 6px 0 0; font-size: 13px; color: #93c5fd; }
 
-        /* Academic Logos Badges */
         .logo-badge { width: 75px; height: 75px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 2px dashed var(--accent-cyan); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; transition: 0.3s; flex-shrink: 0; margin: auto; }
         .logo-badge:hover { border-color: var(--accent-red); background: rgba(255, 255, 255, 0.2); }
         .logo-badge img { width: 100%; height: 100%; object-fit: cover; }
@@ -42,7 +41,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Players Grid Buttons & Avatars */
         .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-top: 20px; }
         .player-tile { background: white; border: 2px solid #e2e8f0; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative; overflow: hidden; }
         .player-tile::before { content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 5px; background: var(--accent-cyan); transition: 0.3s; }
@@ -53,7 +51,6 @@
         .player-avatar { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-cyan); margin: 0 auto; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .player-avatar-placeholder { width: 75px; height: 75px; border-radius: 50%; background: #e0f2fe; color: var(--secondary-blue); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; margin: 0 auto; border: 3px solid var(--accent-cyan); }
 
-        /* Form Styles */
         .form-group { margin-bottom: 18px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--primary-navy); font-size: 14px; }
         input, select, textarea { width: 100%; padding: 11px; border: 1.5px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-size: 14px; transition: 0.2s; background: #fafafa; }
@@ -79,14 +76,17 @@
         .profile-header img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-cyan); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .profile-badges { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
         .badge-tag { background: #e0f2fe; color: var(--secondary-blue); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid var(--accent-cyan); }
+        
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 25, 47, 0.7); display: flex; justify-content: center; align-items: center; color: white; font-size: 20px; z-index: 9999; display: none; }
     </style>
 </head>
 <body>
 
+<div id="loadingOverlay">جاري المزامنة مع السحابة...</div>
+
 <div class="container">
     <header>
-        <!-- شعار الأكاديمية الأول (يمين الترويسة) -->
-        <div class="logo-badge" id="badge1" title="c:\Users\hp\Downloads\WhatsApp Image 2026-10-25 at 12.16.11 AMtt.jpeg">
+        <div class="logo-badge" id="badge1" title="اضغط لرفع الشعار الأول">
             <span id="badge1Text">شعار 1</span>
             <input type="file" accept="image/*" onchange="uploadLogo(event, 'logo1')">
         </div>
@@ -96,8 +96,7 @@
             <p>تحليلات حية، متابعة دقيقة، وتطور مستمر لمستوى اللاعبين</p>
         </div>
 
-        <!-- شعار الأكاديمية الثاني (يسار الترويسة) -->
-        <div class="logo-badge" id="badge2" title="c:\Users\hp\Downloads\WhatsApp Image 2026-10-25 at 12.16.11 AM.jpeg">
+        <div class="logo-badge" id="badge2" title="اضغط لرفع الشعار الثاني">
             <span id="badge2Text">شعار 2</span>
             <input type="file" accept="image/*" onchange="uploadLogo(event, 'logo2')">
         </div>
@@ -108,19 +107,16 @@
         <button class="tab-btn" onclick="switchTab('addTab')">إضافة تقييم جديد</button>
     </div>
 
-    <!-- Tab 1: Players Grid -->
     <div id="playersTab" class="section active">
         <h2>اختر لاعباً لعرض تقارير تطوره وصورته:</h2>
-        <div id="playersGrid" class="players-grid"></div>
+        <div id="playersGrid" class="players-grid">جاري تحميل البيانات...</div>
     </div>
 
-    <!-- Single Player Profile View -->
     <div id="playerProfileView" class="section">
         <button class="back-btn" onclick="backToPlayersGrid()">← رجوع لقائمة اللاعبين</button>
         <div id="playerProfileContent"></div>
     </div>
 
-    <!-- Tab 2: Add Evaluation Form -->
     <div id="addTab" class="section">
         <form id="evalForm" onsubmit="saveEvaluation(event)">
             <fieldset>
@@ -192,6 +188,9 @@
 </div>
 
 <script>
+    // ضع رابط جوجل أبس كريبت هنا بين علامتي التنصيص:
+    const WEB_APP_URL ="https://script.google.com/macros/s/AKfycbzF6LV0d46vmKocpk3yLmbHmliYOCiQrYDHZQ8EfxV0haFuekqagmkfOJ-XDDNfl5qh/exec";
+
     const criteriaData = [
         {
             title: "ثانياً: الجانب السلوكي والالتزام",
@@ -248,41 +247,51 @@
         }
     ];
 
-    function initDefaultData() {
-        if(!localStorage.getItem('football_evals')) {
-            const defaultDB = {
-                "محمد إبراهيم": [
-                    {
-                        date: "2026-10-01",
-                        pos: "مهاجم صريح",
-                        foot: "يمنى",
-                        age: "19",
-                        height: "181",
-                        weight: "74",
-                        strengths: "سرعة انفجارية ممتازة وإنهاء رائع للفرص.",
-                        improvements: "التركيز على مسح الملعب قبل الاستلام.",
-                        decision: "جاهز أساسي",
-                        photo: "",
-                        scores: {}
-                    }
-                ],
-                "كريم حسام": [
-                    {
-                        date: "2026-10-01",
-                        pos: "خط وسط مدافع",
-                        foot: "يسرى",
-                        age: "18",
-                        height: "177",
-                        weight: "70",
-                        strengths: "قراءة رائعة للعب وافتكاك نظيف للكرة.",
-                        improvements: "زيادة سرعة الارتداد.",
-                        decision: "تحت الملاحظة الدقيقة",
-                        photo: "",
-                        scores: {}
-                    }
-                ]
+    let cloudDB = {};
+
+    async function loadCloudData() {
+        if (!WEB_APP_URL || WEB_APP_URL.includes("ضع_رابط")) {
+            cloudDB = JSON.parse(localStorage.getItem('football_evals')) || {
+                "محمد إبراهيم": [{ date: "2026-10-01", pos: "مهاجم", foot: "يمنى", age: "19", height: "181", weight: "74", strengths: "سرعة ممتازة", improvements: "التركيز", decision: "جاهز أساسي", photo: "", scores: {} }]
             };
-            localStorage.setItem('football_evals', JSON.stringify(defaultDB));
+            loadPlayersGrid();
+            return;
+        }
+
+        try {
+            let res = await fetch(WEB_APP_URL);
+            let data = await res.json();
+            if (Object.keys(data).length === 0) {
+                cloudDB = {};
+            } else {
+                cloudDB = data;
+            }
+        } catch (err) {
+            console.error("فشل الاتصال بالسحابة:", err);
+            cloudDB = JSON.parse(localStorage.getItem('football_evals')) || {};
+        }
+        loadPlayersGrid();
+    }
+
+    async function saveCloudData() {
+        localStorage.setItem('football_evals', JSON.stringify(cloudDB));
+        if (!WEB_APP_URL || WEB_APP_URL.includes("ضع_رابط")) return;
+
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        try {
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(cloudDB)
+            });
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert('تم حفظ البيانات ومزامنتها على السحابة بنجاح!');
+                loadCloudData();
+            }, 1500);
+        } catch (err) {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            alert('حدث خطأ أثناء المزامنة السحابية.');
         }
     }
 
@@ -341,7 +350,7 @@
         
         document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
-        if(tabId === 'playersTab') loadPlayersGrid();
+        if(tabId === 'playersTab') loadCloudData();
     }
 
     function saveEvaluation(e) {
@@ -371,15 +380,12 @@
                 }
             });
 
-            let db = JSON.parse(localStorage.getItem('football_evals')) || {};
-            if(!db[name]) db[name] = [];
-            db[name].push(evalData);
+            if(!cloudDB[name]) cloudDB[name] = [];
+            cloudDB[name].push(evalData);
             
-            localStorage.setItem('football_evals', JSON.stringify(db));
-            alert('تم حفظ التقييم وسجل التطور والصورة بنجاح!');
+            saveCloudData();
             document.getElementById('evalForm').reset();
             document.getElementById('pDate').valueAsDate = new Date();
-            
             document.querySelectorAll('.tab-btn')[0].click();
         }
 
@@ -390,28 +396,26 @@
             };
             reader.readAsDataURL(fileInput.files[0]);
         } else {
-            let db = JSON.parse(localStorage.getItem('football_evals')) || {};
             let existingPhoto = '';
-            if(db[name] && db[name].length > 0) {
-                existingPhoto = db[name][db[name].length - 1].photo || '';
+            if(cloudDB[name] && cloudDB[name].length > 0) {
+                existingPhoto = cloudDB[name][cloudDB[name].length - 1].photo || '';
             }
             proceedSave(existingPhoto);
         }
     }
 
     function loadPlayersGrid() {
-        let db = JSON.parse(localStorage.getItem('football_evals')) || {};
         let gridDiv = document.getElementById('playersGrid');
         gridDiv.innerHTML = '';
 
-        let names = Object.keys(db);
+        let names = Object.keys(cloudDB);
         if(names.length === 0) {
             gridDiv.innerHTML = '<p style="text-align:center; color:#64748b; grid-column: 1/-1; padding: 20px;">لا توجد أسماء مسجلة حتى الآن.</p>';
             return;
         }
 
         names.forEach(name => {
-            let history = db[name];
+            let history = cloudDB[name];
             let latest = history[history.length - 1];
             
             let photoHtml = latest.photo ? 
@@ -431,8 +435,7 @@
     }
 
     function openPlayerProfile(name) {
-        let db = JSON.parse(localStorage.getItem('football_evals')) || {};
-        let history = db[name] || [];
+        let history = cloudDB[name] || [];
         let latest = history[history.length - 1] || {};
         
         document.getElementById('playersTab').classList.remove('active');
@@ -499,23 +502,21 @@
         document.getElementById('playerProfileView').classList.remove('active');
         document.getElementById('mainTabs').style.display = 'flex';
         document.getElementById('playersTab').classList.add('active');
-        loadPlayersGrid();
+        loadCloudData();
     }
 
     function deletePlayer(name) {
         if(confirm(`هل أنت متأكد من حذف سجل اللاعب ${name} بالكامل؟`)) {
-            let db = JSON.parse(localStorage.getItem('football_evals')) || {};
-            delete db[name];
-            localStorage.setItem('football_evals', JSON.stringify(db));
+            delete cloudDB[name];
+            saveCloudData();
             backToPlayersGrid();
         }
     }
 
     window.onload = () => {
-        initDefaultData();
         buildForm();
         loadSavedLogos();
-        loadPlayersGrid();
+        loadCloudData();
     };
 </script>
 
