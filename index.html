@@ -190,9 +190,9 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzgg2rG4ljqOoq6LfM5m4gENVQNOL-dm4DX1R-R7SCpg_iU856LcFnNXWtegefCTtCu/exec";
     
-    // إعدادات خدمة Cloudinary لرفع الصور بشكل سحابي يظهر على كل الأجهزة
- const CLOUD_NAME = "yhfugqct";
-  const UPLOAD_PRESET = "yhfugqct";
+    // إعدادات خدمة Cloudinary السحابية
+    const CLOUD_NAME = "yhfugqct";
+    const UPLOAD_PRESET = "ml_football";
 
     const criteriaData = [
         {
@@ -360,9 +360,17 @@
                 body: formData
             });
             let data = await res.json();
-            return data.secure_url || '';
+            
+            if (data.secure_url) {
+                return data.secure_url;
+            } else {
+                console.error("Cloudinary Error:", data);
+                alert("فشل رفع الصورة إلى Cloudinary: " + (data.error ? data.error.message : "تأكد من إعدادات الـ Preset"));
+                return '';
+            }
         } catch (err) {
-            console.error("خطأ في رفع الصورة إلى Cloudinary:", err);
+            console.error("Fetch Error:", err);
+            alert("فشل الاتصال بخدمة رفع الصور، تأكد من الإنترنت.");
             return '';
         }
     }
