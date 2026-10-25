@@ -312,7 +312,7 @@
     function uploadLogo(event, logoKey) {
         const file = event.target.files[0];
         if (file) {
-            compressImage(file, 200, 200, 0.7, function(base64Image) {
+            compressImage(file, 150, 150, 0.6, function(base64Image) {
                 localStorage.setItem(logoKey, base64Image);
                 displayLogo(logoKey, base64Image);
             });
@@ -344,7 +344,7 @@
         if(tabId === 'playersTab') loadCloudData();
     }
 
-    // دالة ضغط الصور لضمان عدم امتلاء الذاكرة
+    // دالة ضغط فائقة الصغر لضمان التزامن السحابي للصور بدون أخطاء
     function compressImage(file, maxWidth, maxHeight, quality, callback) {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -383,13 +383,7 @@
         const fileInput = document.getElementById('pImageFile');
 
         function proceedSave(photoBase64) {
-            if (photoBase64) {
-                let localPhotos = JSON.parse(localStorage.getItem('football_photos')) || {};
-                localPhotos[name] = photoBase64;
-                localStorage.setItem('football_photos', JSON.stringify(localPhotos));
-            }
-
-            const evalData = {
+            let evalData = {
                 date: document.getElementById('pDate').value,
                 pos: document.getElementById('pPos').value,
                 foot: document.getElementById('pFoot').value,
@@ -399,8 +393,14 @@
                 strengths: document.getElementById('pStrengths').value,
                 improvements: document.getElementById('pImprovements').value,
                 decision: document.getElementById('pDecision').value,
+                photo: photoBase64 || '', // تخزين الصورة سحابياً لكي تظهر على كل الأجهزة
                 scores: {}
             };
+
+            // لو لم يتم رفع صورة جديدة، نحتفظ بصورة آخر تقييم بنفس الاسم إن وُجدت
+            if (!photoBase64 && cloudDB[name] && cloudDB[name].length > 0) {
+                evalData.photo = cloudDB[name][cloudDB[name].length - 1].photo || '';
+            }
 
             let allSelects = document.querySelectorAll('#evalForm select');
             allSelects.forEach(sel => {
@@ -419,7 +419,7 @@
         }
 
         if(fileInput.files && fileInput.files[0]) {
-            compressImage(fileInput.files[0], 300, 300, 0.7, function(compressedBase64) {
+            compressImage(fileInput.files[0], 150, 150, 0.5, function(compressedBase64) {
                 proceedSave(compressedBase64);
             });
         } else {
@@ -437,12 +437,10 @@
             return;
         }
 
-        let localPhotos = JSON.parse(localStorage.getItem('football_photos')) || {};
-
         names.forEach(name => {
             let history = cloudDB[name];
             let latest = history[history.length - 1];
-            let playerPhoto = localPhotos[name] || '';
+            let playerPhoto = latest.photo || '';
             
             let photoHtml = playerPhoto ? 
                 `<img src="${playerPhoto}" class="player-avatar" alt="${name}">` : 
@@ -470,8 +468,7 @@
         let profileView = document.getElementById('playerProfileView');
         let contentDiv = document.getElementById('playerProfileContent');
         
-        let localPhotos = JSON.parse(localStorage.getItem('football_photos')) || {};
-        let playerPhoto = localPhotos[name] || '';
+        let playerPhoto = latest.photo || '';
 
         let photoHtml = playerPhoto ? 
             `<img src="${playerPhoto}" alt="${name}">` : 
@@ -537,9 +534,6 @@
     function deletePlayer(name) {
         if(confirm(`هل أنت متأكد من حذف سجل اللاعب ${name} بالكامل؟`)) {
             delete cloudDB[name];
-            let localPhotos = JSON.parse(localStorage.getItem('football_photos')) || {};
-            delete localPhotos[name];
-            localStorage.setItem('football_photos', JSON.stringify(localPhotos));
             saveCloudData();
             backToPlayersGrid();
         }
