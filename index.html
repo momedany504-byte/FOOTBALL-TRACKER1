@@ -273,28 +273,24 @@
         loadPlayersGrid();
     }
 
-    async function saveCloudData() {
+async function saveCloudData() {
         localStorage.setItem('football_evals', JSON.stringify(cloudDB));
         if (!WEB_APP_URL || WEB_APP_URL.includes("ضع_رابط")) return;
 
         document.getElementById('loadingOverlay').style.display = 'flex';
         try {
-            await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(cloudDB)
-            });
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                alert('تم حفظ البيانات ومزامنتها على السحابة بنجاح!');
-                loadCloudData();
-            }, 1500);
+            let jsonStr = JSON.stringify(cloudDB);
+            let url = WEB_APP_URL + "?data=" + encodeURIComponent(jsonStr);
+            await fetch(url);
+            
+            document.getElementById('loadingOverlay').style.display = 'none';
+            alert('تم حفظ البيانات ومزامنتها على السحابة بنجاح!');
+            loadCloudData();
         } catch (err) {
             document.getElementById('loadingOverlay').style.display = 'none';
             alert('حدث خطأ أثناء المزامنة السحابية.');
         }
     }
-
     function buildForm() {
         const container = document.getElementById('criteriaSections');
         let html = '';
