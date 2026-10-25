@@ -251,6 +251,7 @@
     async function loadCloudData() {
         if (!WEB_APP_URL || WEB_APP_URL.includes("ضع_رابط")) {
             cloudDB = JSON.parse(localStorage.getItem('football_evals')) || {};
+            loadSavedLogos();
             loadPlayersGrid();
             return;
         }
@@ -267,6 +268,7 @@
             console.error("فشل الاتصال بالسحابة:", err);
             cloudDB = JSON.parse(localStorage.getItem('football_evals')) || {};
         }
+        loadSavedLogos();
         loadPlayersGrid();
     }
 
@@ -280,7 +282,7 @@
             await fetch(url);
             
             document.getElementById('loadingOverlay').style.display = 'none';
-            alert('تم حفظ البيانات ومزامنة الصورة والسحابة بنجاح!');
+            alert('تم الحفظ والمزامنة السحابية بنجاح!');
             loadCloudData();
         } catch (err) {
             document.getElementById('loadingOverlay').style.display = 'none';
@@ -311,9 +313,11 @@
     function uploadLogo(event, logoKey) {
         const file = event.target.files[0];
         if (file) {
-            compressImage(file, 150, 150, 0.5, function(base64Image) {
-                localStorage.setItem(logoKey, base64Image);
+            compressImage(file, 150, 150, 0.4, function(base64Image) {
+                if (!cloudDB._settings) cloudDB._settings = {};
+                cloudDB._settings[logoKey] = base64Image;
                 displayLogo(logoKey, base64Image);
+                saveCloudData(); // حفظ الشعار فوراً في السحابة
             });
         }
     }
@@ -325,12 +329,10 @@
     }
 
     function loadSavedLogos() {
-        ['logo1', 'logo2'].forEach(logoKey => {
-            let savedLogo = localStorage.getItem(logoKey);
-            if(savedLogo) {
-                displayLogo(logoKey, savedLogo);
-            }
-        });
+        if (cloudDB._settings) {
+            if (cloudDB._settings.logo1) displayLogo('logo1', cloudDB._settings.logo1);
+            if (cloudDB._settings.logo2) displayLogo('logo2', cloudDB._settings.logo2);
+        }
     }
 
     function switchTab(tabId) {
@@ -397,7 +399,6 @@
                 scores: {}
             };
 
-            // إذا لم يتم اختيار صورة جديدة، احتفظ بصورة اللاعب السابقة إن وجدت
             if (!photoBase64 && cloudDB[name] && cloudDB[name].length > 0) {
                 evalData.photo = cloudDB[name][cloudDB[name].length - 1].photo || '';
             }
@@ -419,8 +420,7 @@
         }
 
         if(fileInput.files && fileInput.files[0]) {
-            // ضغط الصورة لتصبح صغيرة للغاية وآمنة للتخزين السحابي الشامل
-            compressImage(fileInput.files[0], 150, 150, 0.5, function(compressedBase64) {
+            compressImage(fileInput.files[0], 150, 150, 0.4, function(compressedBase64) {
                 proceedSave(compressedBase64);
             });
         } else {
@@ -432,7 +432,7 @@
         let gridDiv = document.getElementById('playersGrid');
         gridDiv.innerHTML = '';
 
-        let names = Object.keys(cloudDB);
+        let names = Object.keys(cloudDB).filter(k => k !== '_settings');
         if(names.length === 0) {
             gridDiv.innerHTML = '<p style="text-align:center; color:#64748b; grid-column: 1/-1; padding: 20px;">لا توجد أسماء مسجلة حتى الآن.</p>';
             return;
@@ -542,7 +542,6 @@
 
     window.onload = () => {
         buildForm();
-        loadSavedLogos();
         loadCloudData();
     };
 </script>
