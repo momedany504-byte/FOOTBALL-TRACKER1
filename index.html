@@ -82,7 +82,7 @@
 </head>
 <body>
 
-<div id="loadingOverlay">جاري رفع الصورة والمزامنة السحابية...</div>
+<div id="loadingOverlay">جاري الحفظ والمزامنة السحابية الشاملة...</div>
 
 <div class="container">
     <header>
@@ -189,10 +189,7 @@
 
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzgg2rG4ljqOoq6LfM5m4gENVQNOL-dm4DX1R-R7SCpg_iU856LcFnNXWtegefCTtCu/exec";
-    
-    // إعدادات خدمة Cloudinary لرفع الصور بشكل سحابي يظهر على كل الأجهزة
-const CLOUD_NAME = "yhfugqct";
-const UPLOAD_PRESET = "yhfugqct";
+
     const criteriaData = [
         {
             title: "ثانياً: الجانب السلوكي والالتزام",
@@ -283,7 +280,7 @@ const UPLOAD_PRESET = "yhfugqct";
             await fetch(url);
             
             document.getElementById('loadingOverlay').style.display = 'none';
-            alert('تم حفظ البيانات ومزامنتها على السحابة بنجاح!');
+            alert('تم حفظ البيانات ومزامنة الصورة والسحابة بنجاح!');
             loadCloudData();
         } catch (err) {
             document.getElementById('loadingOverlay').style.display = 'none';
@@ -314,12 +311,10 @@ const UPLOAD_PRESET = "yhfugqct";
     function uploadLogo(event, logoKey) {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                localStorage.setItem(logoKey, e.target.result);
-                displayLogo(logoKey, e.target.result);
-            };
-            reader.readAsDataURL(file);
+            compressImage(file, 150, 150, 0.5, function(base64Image) {
+                localStorage.setItem(logoKey, base64Image);
+                displayLogo(logoKey, base64Image);
+            });
         }
     }
 
@@ -348,68 +343,89 @@ const UPLOAD_PRESET = "yhfugqct";
         if(tabId === 'playersTab') loadCloudData();
     }
 
-    async function uploadToCloudinary(file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', UPLOAD_PRESET);
-        
-        try {
-            let res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            let data = await res.json();
-            return data.secure_url || '';
-        } catch (err) {
-            console.error("خطأ في رفع الصورة إلى Cloudinary:", err);
-            return '';
-        }
+    function compressImage(file, maxWidth, maxHeight, quality, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                callback(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
-    async function saveEvaluation(e) {
+    function saveEvaluation(e) {
         e.preventDefault();
         const name = document.getElementById('pName').value.trim();
         const fileInput = document.getElementById('pImageFile');
 
         document.getElementById('loadingOverlay').style.display = 'flex';
 
-        let photoUrl = '';
-        if (fileInput.files && fileInput.files[0]) {
-            photoUrl = await uploadToCloudinary(fileInput.files[0]);
-        }
+        function proceedSave(photoBase64) {
+            let evalData = {
+                date: document.getElementById('pDate').value,
+                pos: document.getElementById('pPos').value,
+                foot: document.getElementById('pFoot').value,
+                age: document.getElementById('pAge').value,
+                height: document.getElementById('pHeight').value,
+                weight: document.getElementById('pWeight').value,
+                strengths: document.getElementById('pStrengths').value,
+                improvements: document.getElementById('pImprovements').value,
+                decision: document.getElementById('pDecision').value,
+                photo: photoBase64 || '',
+                scores: {}
+            };
 
-        let evalData = {
-            date: document.getElementById('pDate').value,
-            pos: document.getElementById('pPos').value,
-            foot: document.getElementById('pFoot').value,
-            age: document.getElementById('pAge').value,
-            height: document.getElementById('pHeight').value,
-            weight: document.getElementById('pWeight').value,
-            strengths: document.getElementById('pStrengths').value,
-            improvements: document.getElementById('pImprovements').value,
-            decision: document.getElementById('pDecision').value,
-            photo: photoUrl || '',
-            scores: {}
-        };
-
-        if (!photoUrl && cloudDB[name] && cloudDB[name].length > 0) {
-            evalData.photo = cloudDB[name][cloudDB[name].length - 1].photo || '';
-        }
-
-        let allSelects = document.querySelectorAll('#evalForm select');
-        allSelects.forEach(sel => {
-            if(sel.name.startsWith('rate_')) {
-                evalData.scores[sel.name] = sel.value;
+            // إذا لم يتم اختيار صورة جديدة، احتفظ بصورة اللاعب السابقة إن وجدت
+            if (!photoBase64 && cloudDB[name] && cloudDB[name].length > 0) {
+                evalData.photo = cloudDB[name][cloudDB[name].length - 1].photo || '';
             }
-        });
 
-        if(!cloudDB[name]) cloudDB[name] = [];
-        cloudDB[name].push(evalData);
-        
-        await saveCloudData();
-        document.getElementById('evalForm').reset();
-        document.getElementById('pDate').valueAsDate = new Date();
-        document.querySelectorAll('.tab-btn')[0].click();
+            let allSelects = document.querySelectorAll('#evalForm select');
+            allSelects.forEach(sel => {
+                if(sel.name.startsWith('rate_')) {
+                    evalData.scores[sel.name] = sel.value;
+                }
+            });
+
+            if(!cloudDB[name]) cloudDB[name] = [];
+            cloudDB[name].push(evalData);
+            
+            saveCloudData();
+            document.getElementById('evalForm').reset();
+            document.getElementById('pDate').valueAsDate = new Date();
+            document.querySelectorAll('.tab-btn')[0].click();
+        }
+
+        if(fileInput.files && fileInput.files[0]) {
+            // ضغط الصورة لتصبح صغيرة للغاية وآمنة للتخزين السحابي الشامل
+            compressImage(fileInput.files[0], 150, 150, 0.5, function(compressedBase64) {
+                proceedSave(compressedBase64);
+            });
+        } else {
+            proceedSave(null);
+        }
     }
 
     function loadPlayersGrid() {
