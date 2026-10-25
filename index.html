@@ -188,8 +188,7 @@
 </div>
 
 <script>
-    // ضع رابط جوجل أبس كريبت هنا بين علامتي التنصيص:
-    const WEB_APP_URL ="https://script.google.com/macros/s/AKfycbzgg2rG4ljqOoq6LfM5m4gENVQNOL-dm4DX1R-R7SCpg_iU856LcFnNXWtegefCTtCu/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzgg2rG4ljqOoq6LfM5m4gENVQNOL-dm4DX1R-R7SCpg_iU856LcFnNXWtegefCTtCu/exec";
 
     const criteriaData = [
         {
@@ -251,9 +250,7 @@
 
     async function loadCloudData() {
         if (!WEB_APP_URL || WEB_APP_URL.includes("ضع_رابط")) {
-            cloudDB = JSON.parse(localStorage.getItem('football_evals')) || {
-                "محمد إبراهيم": [{ date: "2026-10-01", pos: "مهاجم", foot: "يمنى", age: "19", height: "181", weight: "74", strengths: "سرعة ممتازة", improvements: "التركيز", decision: "جاهز أساسي", photo: "", scores: {} }]
-            };
+            cloudDB = JSON.parse(localStorage.getItem('football_evals')) || {};
             loadPlayersGrid();
             return;
         }
@@ -273,7 +270,7 @@
         loadPlayersGrid();
     }
 
-async function saveCloudData() {
+    async function saveCloudData() {
         localStorage.setItem('football_evals', JSON.stringify(cloudDB));
         if (!WEB_APP_URL || WEB_APP_URL.includes("ضع_رابط")) return;
 
@@ -291,6 +288,7 @@ async function saveCloudData() {
             alert('حدث خطأ أثناء المزامنة السحابية.');
         }
     }
+
     function buildForm() {
         const container = document.getElementById('criteriaSections');
         let html = '';
@@ -355,6 +353,12 @@ async function saveCloudData() {
         const fileInput = document.getElementById('pImageFile');
 
         function proceedSave(photoBase64) {
+            if (photoBase64) {
+                let localPhotos = JSON.parse(localStorage.getItem('football_photos')) || {};
+                localPhotos[name] = photoBase64;
+                localStorage.setItem('football_photos', JSON.stringify(localPhotos));
+            }
+
             const evalData = {
                 date: document.getElementById('pDate').value,
                 pos: document.getElementById('pPos').value,
@@ -365,7 +369,6 @@ async function saveCloudData() {
                 strengths: document.getElementById('pStrengths').value,
                 improvements: document.getElementById('pImprovements').value,
                 decision: document.getElementById('pDecision').value,
-                photo: photoBase64,
                 scores: {}
             };
 
@@ -392,11 +395,7 @@ async function saveCloudData() {
             };
             reader.readAsDataURL(fileInput.files[0]);
         } else {
-            let existingPhoto = '';
-            if(cloudDB[name] && cloudDB[name].length > 0) {
-                existingPhoto = cloudDB[name][cloudDB[name].length - 1].photo || '';
-            }
-            proceedSave(existingPhoto);
+            proceedSave(null);
         }
     }
 
@@ -410,12 +409,15 @@ async function saveCloudData() {
             return;
         }
 
+        let localPhotos = JSON.parse(localStorage.getItem('football_photos')) || {};
+
         names.forEach(name => {
             let history = cloudDB[name];
             let latest = history[history.length - 1];
+            let playerPhoto = localPhotos[name] || '';
             
-            let photoHtml = latest.photo ? 
-                `<img src="${latest.photo}" class="player-avatar" alt="${name}">` : 
+            let photoHtml = playerPhoto ? 
+                `<img src="${playerPhoto}" class="player-avatar" alt="${name}">` : 
                 `<div class="player-avatar-placeholder">${name.charAt(0)}</div>`;
 
             gridDiv.innerHTML += `
@@ -440,8 +442,11 @@ async function saveCloudData() {
         let profileView = document.getElementById('playerProfileView');
         let contentDiv = document.getElementById('playerProfileContent');
         
-        let photoHtml = latest.photo ? 
-            `<img src="${latest.photo}" alt="${name}">` : 
+        let localPhotos = JSON.parse(localStorage.getItem('football_photos')) || {};
+        let playerPhoto = localPhotos[name] || '';
+
+        let photoHtml = playerPhoto ? 
+            `<img src="${playerPhoto}" alt="${name}">` : 
             `<div class="player-avatar-placeholder" style="width:100px; height:100px; font-size:36px;">${name.charAt(0)}</div>`;
 
         let historyHtml = history.map((h, idx) => {
@@ -502,8 +507,11 @@ async function saveCloudData() {
     }
 
     function deletePlayer(name) {
-        if(confirm(`هل أنت متأكد من حذف سجل اللاعب ${name} بالكامل؟`)) {
+        if(confirm(`هل أنت متأكد من سجل اللاعب ${name} بالكامل؟`)) {
             delete cloudDB[name];
+            let localPhotos = JSON.parse(localStorage.getItem('football_photos')) || {};
+            delete localPhotos[name];
+            localStorage.setItem('football_photos', JSON.stringify(localPhotos));
             saveCloudData();
             backToPlayersGrid();
         }
