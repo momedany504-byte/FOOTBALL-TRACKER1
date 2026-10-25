@@ -8,8 +8,8 @@
         :root {
             --primary-navy: #0a192f;
             --secondary-blue: #1e3a8a;
-            --accent-cyan: #00bcd4; /* مستوحى من شعار تشامبيونز */
-            --accent-red: #ef4444;  /* مستوحى من شعار ميفن هاب */
+            --accent-cyan: #00bcd4;
+            --accent-red: #ef4444;
             --bg-color: #f0f4f8;
             --card-bg: #ffffff;
             --text-main: #1e293b;
@@ -43,15 +43,15 @@
         }
 
         /* Players Grid Buttons & Avatars */
-        .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; margin-top: 20px; }
+        .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-top: 20px; }
         .player-tile { background: white; border: 2px solid #e2e8f0; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative; overflow: hidden; }
         .player-tile::before { content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 5px; background: var(--accent-cyan); transition: 0.3s; }
         .player-tile:hover { border-color: var(--accent-cyan); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 188, 212, 0.2); }
-        .player-tile h3 { margin: 12px 0 5px; font-size: 18px; color: var(--primary-navy); }
-        .player-tile p { margin: 0; font-size: 13px; color: #64748b; }
+        .player-tile h3 { margin: 10px 0 5px; font-size: 18px; color: var(--primary-navy); }
+        .player-tile p { margin: 3px 0; font-size: 13px; color: #64748b; }
         
-        .player-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-cyan); margin: 0 auto; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .player-avatar-placeholder { width: 80px; height: 80px; border-radius: 50%; background: #e0f2fe; color: var(--secondary-blue); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; margin: 0 auto; border: 3px solid var(--accent-cyan); }
+        .player-avatar { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-cyan); margin: 0 auto; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .player-avatar-placeholder { width: 75px; height: 75px; border-radius: 50%; background: #e0f2fe; color: var(--secondary-blue); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; margin: 0 auto; border: 3px solid var(--accent-cyan); }
 
         /* Form Styles */
         .form-group { margin-bottom: 18px; }
@@ -75,8 +75,10 @@
 
         .history-box { background: white; border: 1px solid #e2e8f0; border-right: 6px solid var(--accent-cyan); padding: 22px; margin: 20px 0; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
         
-        .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; background: #f8fafc; padding: 20px; border-radius: 12px; }
+        .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; background: #f8fafc; padding: 20px; border-radius: 12px; flex-wrap: wrap; }
         .profile-header img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-cyan); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .profile-badges { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+        .badge-tag { background: #e0f2fe; color: var(--secondary-blue); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid var(--accent-cyan); }
     </style>
 </head>
 <body>
@@ -84,7 +86,7 @@
 <div class="container">
     <header>
         <!-- شعار الأكاديمية الأول (يمين الترويسة) -->
-        <div class="logo-badge" id="badge1" title="اضغط لرفع الشعار الأول">
+        <div class="logo-badge" id="badge1" title="c:\Users\hp\Downloads\WhatsApp Image 2026-10-25 at 12.16.11 AMtt.jpeg">
             <span id="badge1Text">شعار 1</span>
             <input type="file" accept="image/*" onchange="uploadLogo(event, 'logo1')">
         </div>
@@ -95,7 +97,7 @@
         </div>
 
         <!-- شعار الأكاديمية الثاني (يسار الترويسة) -->
-        <div class="logo-badge" id="badge2" title="اضغط لرفع الشعار الثاني">
+        <div class="logo-badge" id="badge2" title="c:\Users\hp\Downloads\WhatsApp Image 2026-10-25 at 12.16.11 AM.jpeg">
             <span id="badge2Text">شعار 2</span>
             <input type="file" accept="image/*" onchange="uploadLogo(event, 'logo2')">
         </div>
@@ -142,6 +144,18 @@
                             <option value="يمنى">يمنى</option>
                             <option value="يسرى">يسرى</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>العمر (سنة):</label>
+                        <input type="number" id="pAge" placeholder="مثال: 19">
+                    </div>
+                    <div class="form-group">
+                        <label>الطول (سم):</label>
+                        <input type="number" id="pHeight" placeholder="مثال: 180">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>الوزن (كغ):</label>
+                        <input type="number" id="pWeight" placeholder="مثال: 75">
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label>صورة اللاعب الشخصية:</label>
@@ -234,6 +248,44 @@
         }
     ];
 
+    function initDefaultData() {
+        if(!localStorage.getItem('football_evals')) {
+            const defaultDB = {
+                "محمد إبراهيم": [
+                    {
+                        date: "2026-10-01",
+                        pos: "مهاجم صريح",
+                        foot: "يمنى",
+                        age: "19",
+                        height: "181",
+                        weight: "74",
+                        strengths: "سرعة انفجارية ممتازة وإنهاء رائع للفرص.",
+                        improvements: "التركيز على مسح الملعب قبل الاستلام.",
+                        decision: "جاهز أساسي",
+                        photo: "",
+                        scores: {}
+                    }
+                ],
+                "كريم حسام": [
+                    {
+                        date: "2026-10-01",
+                        pos: "خط وسط مدافع",
+                        foot: "يسرى",
+                        age: "18",
+                        height: "177",
+                        weight: "70",
+                        strengths: "قراءة رائعة للعب وافتكاك نظيف للكرة.",
+                        improvements: "زيادة سرعة الارتداد.",
+                        decision: "تحت الملاحظة الدقيقة",
+                        photo: "",
+                        scores: {}
+                    }
+                ]
+            };
+            localStorage.setItem('football_evals', JSON.stringify(defaultDB));
+        }
+    }
+
     function buildForm() {
         const container = document.getElementById('criteriaSections');
         let html = '';
@@ -302,6 +354,9 @@
                 date: document.getElementById('pDate').value,
                 pos: document.getElementById('pPos').value,
                 foot: document.getElementById('pFoot').value,
+                age: document.getElementById('pAge').value,
+                height: document.getElementById('pHeight').value,
+                weight: document.getElementById('pWeight').value,
                 strengths: document.getElementById('pStrengths').value,
                 improvements: document.getElementById('pImprovements').value,
                 decision: document.getElementById('pDecision').value,
@@ -351,7 +406,7 @@
 
         let names = Object.keys(db);
         if(names.length === 0) {
-            gridDiv.innerHTML = '<p style="text-align:center; color:#64748b; grid-column: 1/-1; padding: 20px;">لا توجد أسماء مسجلة حتى الآن. اضغط على "إضافة تقييم جديد" لبدء إضافة اللاعبين.</p>';
+            gridDiv.innerHTML = '<p style="text-align:center; color:#64748b; grid-column: 1/-1; padding: 20px;">لا توجد أسماء مسجلة حتى الآن.</p>';
             return;
         }
 
@@ -368,7 +423,8 @@
                     ${photoHtml}
                     <h3>${name}</h3>
                     <p>المركز: ${latest.pos || 'غير محدد'}</p>
-                    <p style="margin-top: 8px; font-weight: bold; color: var(--secondary-blue);">عدد التقييمات: ${history.length}</p>
+                    <p>العمر: ${latest.age || '-'} سنة | الطول: ${latest.height || '-'} سم | الوزن: ${latest.weight || '-'} كغ</p>
+                    <p style="margin-top: 6px; font-weight: bold; color: var(--secondary-blue);">عدد التقييمات: ${history.length}</p>
                 </div>
             `;
         });
@@ -404,7 +460,8 @@
             return `
                 <div class="history-box">
                     <h3 style="margin-top:0; color:var(--secondary-blue);">التقييم رقم (${idx + 1}) - بتاريخ: ${h.date}</h3>
-                    <p><strong>المركز:</strong> ${h.pos} | <strong>القدم المفضلة:</strong> ${h.foot} | <strong>القرار النهائي:</strong> <span style="color:var(--secondary-blue); font-weight:bold;">${h.decision}</span></p>
+                    <p><strong>المركز:</strong> ${h.pos} | <strong>القدم المفضلة:</strong> ${h.foot} | <strong>العمر:</strong> ${h.age || '-'} | <strong>الطول:</strong> ${h.height || '-'} سم | <strong>الوزن:</strong> ${h.weight || '-'} كغ</p>
+                    <p><strong>القرار النهائي:</strong> <span style="color:var(--secondary-blue); font-weight:bold;">${h.decision}</span></p>
                     
                     <hr style="border:0; border-top:1px solid #e2e8f0; margin: 15px 0;">
                     <h4 style="color:#1e293b;">تفاصيل التقييمات الشاملة:</h4>
@@ -421,7 +478,13 @@
                 ${photoHtml}
                 <div>
                     <h2 style="margin:0; color:#0f172a; font-size:22px;">${name}</h2>
-                    <p style="margin:5px 0 0; color:#64748b;">المركز الحالي: ${latest.pos || 'غير محدد'} | إجمالي التقييمات: ${history.length}</p>
+                    <p style="margin:5px 0; color:#64748b;">المركز: ${latest.pos || 'غير محدد'}</p>
+                    <div class="profile-badges">
+                        <span class="badge-tag">العمر: ${latest.age || '-'} سنة</span>
+                        <span class="badge-tag">الطول: ${latest.height || '-'} سم</span>
+                        <span class="badge-tag">الوزن: ${latest.weight || '-'} كغ</span>
+                        <span class="badge-tag">القدم المفضلة: ${latest.foot || '-'}</span>
+                    </div>
                 </div>
             </div>
             <h3 style="color:#1e293b;">سجل التطور الكامل والتقييمات الدورية:</h3>
@@ -449,6 +512,7 @@
     }
 
     window.onload = () => {
+        initDefaultData();
         buildForm();
         loadSavedLogos();
         loadPlayersGrid();
