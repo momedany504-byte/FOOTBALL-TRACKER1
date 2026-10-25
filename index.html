@@ -82,7 +82,7 @@
 </head>
 <body>
 
-<div id="loadingOverlay">جاري رفع الصورة والمزامنة مع السحابة...</div>
+<div id="loadingOverlay">جاري الحفظ والمزامنة السحابية...</div>
 
 <div class="container">
     <header>
@@ -274,12 +274,21 @@
         localStorage.setItem('football_evals', JSON.stringify(cloudDB));
         if (!WEB_APP_URL || WEB_APP_URL.includes("ضع_رابط")) return;
 
+        document.getElementById('loadingOverlay').style.display = 'flex';
         try {
-            let jsonStr = JSON.stringify(cloudDB);
-            await fetch(WEB_APP_URL + "?data=" + encodeURIComponent(jsonStr));
-            loadCloudData();
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(cloudDB)
+            });
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert('تم حفظ البيانات ومزامنتها على السحابة بنجاح!');
+                loadCloudData();
+            }, 1500);
         } catch (err) {
-            console.error("خطأ في المزامنة:", err);
+            document.getElementById('loadingOverlay').style.display = 'none';
+            alert('حدث خطأ أثناء المزامنة السحابية.');
         }
     }
 
@@ -306,7 +315,7 @@
     function uploadLogo(event, logoKey) {
         const file = event.target.files[0];
         if (file) {
-            compressImage(file, 150, 150, 0.6, function(base64Image) {
+            compressImage(file, 100, 100, 0.4, function(base64Image) {
                 localStorage.setItem(logoKey, base64Image);
                 displayLogo(logoKey, base64Image);
             });
@@ -338,6 +347,7 @@
         if(tabId === 'playersTab') loadCloudData();
     }
 
+    // دالة ضغط فائقة الكفاءة لصغر حجم الصورة لكي تمر بسلاسة في قاعدة البيانات
     function compressImage(file, maxWidth, maxHeight, quality, callback) {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -370,14 +380,12 @@
         reader.readAsDataURL(file);
     }
 
-    async function saveEvaluation(e) {
+    function saveEvaluation(e) {
         e.preventDefault();
         const name = document.getElementById('pName').value.trim();
         const fileInput = document.getElementById('pImageFile');
 
-        document.getElementById('loadingOverlay').style.display = 'flex';
-
-        async function proceedSave(photoUrl) {
+        function proceedSave(photoBase64) {
             let evalData = {
                 date: document.getElementById('pDate').value,
                 pos: document.getElementById('pPos').value,
@@ -388,11 +396,12 @@
                 strengths: document.getElementById('pStrengths').value,
                 improvements: document.getElementById('pImprovements').value,
                 decision: document.getElementById('pDecision').value,
-                photo: photoUrl || '',
+                photo: photoBase64 || '',
                 scores: {}
             };
 
-            if (!photoUrl && cloudDB[name] && cloudDB[name].length > 0) {
+            // الاحتفاظ بصورة آخر تقييم بنفس الاسم إن لم يتم اختيار صورة جديدة
+            if (!photoBase64 && cloudDB[name] && cloudDB[name].length > 0) {
                 evalData.photo = cloudDB[name][cloudDB[name].length - 1].photo || '';
             }
 
@@ -406,31 +415,18 @@
             if(!cloudDB[name]) cloudDB[name] = [];
             cloudDB[name].push(evalData);
             
-            await saveCloudData();
-            document.getElementById('loadingOverlay').style.display = 'none';
-            alert('تم حفظ البيانات ورفع الصورة ومزامنتها على السحابة بنجاح!');
+            saveCloudData();
             document.getElementById('evalForm').reset();
             document.getElementById('pDate').valueAsDate = new Date();
             document.querySelectorAll('.tab-btn')[0].click();
         }
 
         if(fileInput.files && fileInput.files[0]) {
-            compressImage(fileInput.files[0], 250, 250, 0.7, async function(compressedBase64) {
-                try {
-                    let res = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'uploadImage', image: compressedBase64 })
-                    });
-                    let result = await res.json();
-                    let photoUrl = result.status === 'success' ? result.url : '';
-                    await proceedSave(photoUrl);
-                } catch (err) {
-                    console.error("خطأ في رفع الصورة لجوجل درايف:", err);
-                    await proceedSave('');
-                }
+            compressImage(fileInput.files[0], 90, 90, 0.4, function(compressedBase64) {
+                proceedSave(compressedBase64);
             });
         } else {
-            await proceedSave('');
+            proceedSave(null);
         }
     }
 
